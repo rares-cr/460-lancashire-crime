@@ -6,7 +6,7 @@ from dash_bootstrap_templates import load_figure_template
 
 load_figure_template("flatly")
 
-final_df = pd.read_csv('timeseries_df.csv')
+final_df = pd.read_csv('assets/timeseries_df.csv')
 
 dash.register_page(__name__, name='Crime Time Series')
 

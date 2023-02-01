@@ -4,8 +4,8 @@ from dash import dcc, html, Input, Output, callback
 import pandas as pd
 
 
-final_df = pd.read_csv('final_df.csv')
-pop = pd.read_csv("population.csv")
+final_df = pd.read_csv('assets/final_df.csv')
+pop = pd.read_csv("assets/population.csv")
 pop = pop.apply(lambda x: x.str.replace(',', ''))
 
 dash.register_page(__name__, name='Crime Map', path='/')
