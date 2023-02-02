@@ -13,7 +13,7 @@ dash.register_page(__name__, name='Crime Map', path='/')
 
 
 # ------------------------------------------------------------------------------
-# App layout
+# Page layout
 
 layout = html.Div(
     [

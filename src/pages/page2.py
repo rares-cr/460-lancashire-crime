@@ -11,7 +11,7 @@ final_df = pd.read_csv('assets/final_df.csv')
 dash.register_page(__name__, name='Crime Statistics')
 
 # ------------------------------------------------------------------------------
-# App layout
+# Page layout
 
 layout = html.Div(
     [

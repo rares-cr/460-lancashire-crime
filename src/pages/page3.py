@@ -11,7 +11,7 @@ final_df = pd.read_csv('assets/timeseries_df.csv')
 dash.register_page(__name__, name='Crime Time Series')
 
 # ------------------------------------------------------------------------------
-# App layout
+# Page layout
 
 layout = html.Div(
     [
