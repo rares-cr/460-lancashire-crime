@@ -5,11 +5,10 @@ import pandas as pd
 from dash_bootstrap_templates import load_figure_template
 
 load_figure_template("flatly")
-
+# read dataset
 final_df = pd.read_csv('assets/final_df.csv')
-
+# register page to app
 dash.register_page(__name__, name='Crime Statistics')
-
 
 # ------------------------------------------------------------------------------
 # App layout
@@ -19,6 +18,7 @@ layout = html.Div(
 
         html.Div(
             [
+                # add dropdown lists
                 dcc.Dropdown(
                     [
                         "Total Crime",
@@ -76,15 +76,21 @@ layout = html.Div(
             ],
             style=dict(display="flex"),
         ),
+        # add radio items
         dcc.RadioItems(['By Crime Type', 'By Deprivation Decile', 'By District'],
                        'By Crime Type', id='radio', labelStyle={'display': 'inline'}),
 
+        # create first graph container and elements
         html.Div(id="output-container1", children=[]),
         dcc.Graph(id="bar", figure={}),
+        # create second graph container and elements
         html.Div(id="output-container2", children=[]),
         dcc.Graph(id="pie", figure={}),
     ]
 )
+
+# ------------------------------------------------------------------------------
+# Callbacks
 
 @callback(
     [
@@ -100,12 +106,15 @@ layout = html.Div(
     ],
 )
 
+# use inputs as function parameters
 def update_graph(year, district, crimetype, selection):
-
+    # this function creates a bar chart
+    # it returns a container and the figure
     container = ""
     dff = final_df.copy()
 
     if selection == 'By Crime Type':
+        # filter dataframe
         if district != "All Districts":
             dff = dff[dff["Local Authority District name"] == district]
 
@@ -115,6 +124,7 @@ def update_graph(year, district, crimetype, selection):
         dff = dff.groupby('Crime type')['Crime count'].sum()
         dff = pd.DataFrame(dff).reset_index()
 
+        # create bar chart and update layout
         fig1 = px.bar(dff, x='Crime type', y='Crime count', text_auto='.2s', template='flatly')
 
         fig1.update_layout(title='Crime count by Type - ' + str(year) + ' - ' + district,
@@ -125,12 +135,14 @@ def update_graph(year, district, crimetype, selection):
         fig1.update_layout(barmode='stack', xaxis={'categoryorder': 'total descending'})
 
     elif selection == 'By District':
+        # filter dataframe
         dff = dff[dff["Year"] == year]
         dff = dff[dff['Crime type'] == crimetype]
 
         dff = dff.groupby('Local Authority District name')['Crime count'].sum()
         dff = pd.DataFrame(dff).reset_index()
 
+        # create bar chart and update layout
         fig1 = px.bar(dff, x='Local Authority District name', y='Crime count', text_auto='.2s', template='flatly')
 
         fig1.update_layout(title=crimetype+ ' Count by District - ' + str(year),
@@ -141,6 +153,7 @@ def update_graph(year, district, crimetype, selection):
         fig1.update_layout(barmode='stack', xaxis={'categoryorder': 'total descending'})
 
     else:
+        # filter dataframe
         if district != "All Districts":
             dff = dff[dff["Local Authority District name"] == district]
 
@@ -149,6 +162,8 @@ def update_graph(year, district, crimetype, selection):
         dff = dff[dff['Crime type'] == crimetype]
         dff = dff.groupby('Index of Multiple Deprivation Decile')['Crime count'].sum()
         dff = pd.DataFrame(dff).reset_index()
+
+        # create bar chart and update layout
         fig1 = px.bar(dff, x='Index of Multiple Deprivation Decile', y='Crime count',
                       text_auto='.2s', template='flatly')
 
@@ -159,6 +174,7 @@ def update_graph(year, district, crimetype, selection):
 
     return container, fig1
 
+# the second callback is for the second chart on the page, a pie chart
 @callback(
     [
         Output(component_id="output-container2", component_property="children"),
@@ -174,10 +190,13 @@ def update_graph(year, district, crimetype, selection):
     ],
 )
 def update_graph(year, district, crimetype, selection):
+    # this function creates and updates the pie chart using the inputs
+    # it returns a container and the figure
     container = ""
     dff = final_df.copy()
 
     if selection == 'By Crime Type':
+        # filter dataframe
         if district != "All Districts":
             dff = dff[dff["Local Authority District name"] == district]
 
@@ -186,6 +205,8 @@ def update_graph(year, district, crimetype, selection):
         dff = dff[dff['Crime type'] != 'Total Crime']
         dff = dff.groupby('Crime type')['Crime count'].sum()
         dff = pd.DataFrame(dff).reset_index()
+
+        # create pie chart and update layout
         fig2 = px.pie(dff, names='Crime type', values='Crime count',
                       color_discrete_sequence=px.colors.qualitative.Dark24, template='flatly')
         fig2.update_layout(uniformtext_minsize=12, uniformtext_mode='hide', showlegend=True, legend=dict(
@@ -195,11 +216,13 @@ def update_graph(year, district, crimetype, selection):
             )
         ))
     elif selection == 'By District':
+        # filter dataframe
         dff = dff[dff["Year"] == year]
         dff = dff[dff['Crime type'] == crimetype]
         dff = dff.groupby('Local Authority District name')['Crime count'].sum()
         dff = pd.DataFrame(dff).reset_index()
 
+        # create pie chart and update layout
         fig2 = px.pie(dff, names='Local Authority District name', values='Crime count',
                       color_discrete_sequence=px.colors.qualitative.Dark24, template='flatly')
         fig2.update_layout(uniformtext_minsize=12, uniformtext_mode='hide', showlegend=True, legend=dict(
@@ -210,6 +233,7 @@ def update_graph(year, district, crimetype, selection):
         ))
 
     else:
+        # filter dataframe
         if district != "All Districts":
             dff = dff[dff["Local Authority District name"] == district]
 
@@ -218,6 +242,8 @@ def update_graph(year, district, crimetype, selection):
         dff = dff[dff['Crime type'] == crimetype]
         dff = dff.groupby('Index of Multiple Deprivation Decile')['Crime count'].sum()
         dff = pd.DataFrame(dff).reset_index()
+
+        # create pie chart and update layout
         fig2 = px.pie(dff, names='Index of Multiple Deprivation Decile', values='Crime count',
                       color_discrete_sequence=px.colors.qualitative.Dark24, template='flatly')
         fig2.update_layout(uniformtext_minsize=12, uniformtext_mode='hide', showlegend=True, legend=dict(

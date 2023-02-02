@@ -2,11 +2,13 @@ import dash
 from dash import Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 
-
+# initialize dash app
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 app = Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.FLATLY, dbc_css])
+# initialize server for app deployment
 server = app.server
 
+# create the navigation menu element
 navbar = dbc.Nav(
     [
         dbc.NavLink(
@@ -27,6 +29,7 @@ navbar = dbc.Nav(
 # ------------------------------------------------------------------------------
 # App layout
 app.layout = dbc.Container([
+    # dashboard title
     dbc.Row([
         dbc.Col(html.Div("Lancashire Crime Dashboard",
                          style={'fontSize':50, 'textAlign':'center'}))
@@ -34,6 +37,7 @@ app.layout = dbc.Container([
 
     html.Hr(),
 
+    # add navigation menu and page container to the layout
     dbc.Row(
         [
             dbc.Col(
@@ -49,7 +53,6 @@ app.layout = dbc.Container([
     )
 ], fluid=True)
 
-
-
+# runs the web app
 if __name__ == "__main__":
     app.run_server(debug=True)

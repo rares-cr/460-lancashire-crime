@@ -3,11 +3,12 @@ import plotly.graph_objects as go
 from dash import dcc, html, Input, Output, callback
 import pandas as pd
 
-
+# import datasets
 final_df = pd.read_csv('assets/final_df.csv')
 pop = pd.read_csv("assets/population.csv")
 pop = pop.apply(lambda x: x.str.replace(',', ''))
 
+# register page
 dash.register_page(__name__, name='Crime Map', path='/')
 
 
@@ -16,7 +17,7 @@ dash.register_page(__name__, name='Crime Map', path='/')
 
 layout = html.Div(
     [
-
+        # adding the dropdown lists
         html.Div(
             [
                 dcc.Dropdown(
@@ -84,22 +85,30 @@ layout = html.Div(
             style=dict(display="flex"),
             className="mb-4"
         ),
+        # adding radio items
         dcc.RadioItems(['Show Crime Count', 'Show Crime Rate'],
                        'Show Crime Count', id='radio', labelStyle={'display': 'inline'}),
+        # create output container
         html.Div(id="output-container", children=[]),
         html.Br(),
+        # add graph element
         dcc.Graph(id="my-map", figure={}),
 
     ], className="mb-4"
 )
 
+# ------------------------------------------------------------------------------
+# Callbacks
 
+# The following code creates the charts and uses @callback to update the charts when the filters change
 @callback(
     [
+        # two output elements
         Output(component_id="output-container", component_property="children"),
         Output(component_id="my-map", component_property="figure"),
     ],
     [
+        # five input elements (based on dropdown and radio items
         Input(component_id="crime-type", component_property="value"),
         Input(component_id="year", component_property="value"),
         Input(component_id="deprivation", component_property="value"),
@@ -107,12 +116,19 @@ layout = html.Div(
         Input(component_id="radio", component_property="value")
     ],
 )
+
+# function that creates the chart
+# takes all the inputs from above as parameters
+# it returns a container and the figure
 def update_graph(crimetype, year, deprivation, district, selection):
 
     container = ""
     token = "pk.eyJ1IjoicmFyZXNjciIsImEiOiJjbGJpMmQ3Y2swOG9mM3dvOTFteGtmaTBkIn0.SQ1JLnGk9CTTs-AY8ZXyIw"
 
+    # create a copy of the dataframe
     dff = final_df.copy()
+
+    # filter the dataframe using the function parameters
     dff = dff[dff["Crime type"] == crimetype]
     dff = dff[dff["Year"] == year]
 
@@ -122,17 +138,21 @@ def update_graph(crimetype, year, deprivation, district, selection):
     if district != "All Districts":
         dff = dff[dff["Local Authority District name"] == district]
 
+    # remove 0 values
     dff = dff[dff['Crime count'] != 0]
 
+    # create new dataframe to show crime rates rather than crime counts
     new_df = dff.merge(pop, how='left', left_on='LSOA code', right_on='LSOA Code')
     new_df.drop(columns=['LSOA Code'], inplace=True)
     new_df['Population'] = new_df['Population'].astype(int)
     new_df['Crime Rate'] = round(new_df['Crime count'] / new_df['Population'] * 1000,2)
 
+    # based on the radio item selection, creates a geoplot using crime count or crime rate
     if selection == 'Show Crime Count':
+        # the max value is used as reference for bubble sizes
         max = dff["Crime count"].max()
 
-        # Plotly Express
+        # Plotly Express - create the geoplot using crime counts
         fig = go.Figure(
             data=[
                 go.Scattermapbox(
@@ -153,7 +173,7 @@ def update_graph(crimetype, year, deprivation, district, selection):
                 )
             ]
         )
-
+        # update layout with central coordinates, style and zoom
         fig.update_layout(
             mapbox=dict(
                 style="dark",
@@ -169,9 +189,10 @@ def update_graph(crimetype, year, deprivation, district, selection):
             height = 700
         )
     else:
+        # the case for crime rate
         max = new_df["Crime Rate"].max()
 
-        # Plotly Express
+        # Plotly Express - create the geoplot using crime rates
         fig = go.Figure(
             data=[
                 go.Scattermapbox(
