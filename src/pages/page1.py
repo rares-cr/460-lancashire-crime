@@ -86,7 +86,7 @@ layout = html.Div(
             className="mb-4"
         ),
         # adding radio items
-        dcc.RadioItems(['Show Crime Count', 'Show Crime Rate'],
+        dcc.RadioItems(['Show Crime Count', 'Show Monthly Crime Rate'],
                        'Show Crime Count', id='radio', labelStyle={'display': 'inline'}),
         # create output container
         html.Div(id="output-container", children=[]),
@@ -145,7 +145,18 @@ def update_graph(crimetype, year, deprivation, district, selection):
     new_df = dff.merge(pop, how='left', left_on='LSOA code', right_on='LSOA Code')
     new_df.drop(columns=['LSOA Code'], inplace=True)
     new_df['Population'] = new_df['Population'].astype(int)
-    new_df['Crime Rate'] = round(new_df['Crime count'] / new_df['Population'] * 1000,2)
+
+    # set variable m for dividing Crime count to get monthly crime rate
+    if year == 2019:
+        m = 3
+    elif year == 2022:
+        m = 9
+    elif year == 'All years':
+        m = 36
+    else:
+        m = 12
+
+    new_df['Crime Rate'] = round((new_df['Crime count'] / new_df['Population'])/m * 1000, 2)
 
     # based on the radio item selection, creates a geoplot using crime count or crime rate
     if selection == 'Show Crime Count':
